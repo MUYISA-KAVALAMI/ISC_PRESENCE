@@ -26,7 +26,7 @@
             <div class="col-md-4">
                 <label for="filter_auditoire" class="form-label">Par auditoire</label>
                 <select class="form-select" id="filter_auditoire" onchange="filterCours()">
-                    <option value="">Tous les auditoires</option>
+                    <option value="">Toutes les Promotions</option>
                     {% for auditoire in auditoires_list %}
                     <option value="{{ auditoire.id }}">{{ auditoire.nom }}</option>
                     {% endfor %}
@@ -60,7 +60,7 @@
             <tr>
                 <th>ID</th>
                 <th>Désignation</th>  <!-- NOUVELLE COLONNE -->
-                <th>Auditoire</th>
+                <th>Promotions</th>
                 <th>Enseignant</th>
                 <th>Période</th>
                 <th>Volume Horaire</th>

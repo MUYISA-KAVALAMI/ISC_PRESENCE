@@ -72,7 +72,7 @@
                 <ul class="navbar-nav ms-auto">
                     {% if session.get('username') %}
                         <li class="nav-item">
-                            <a class="nav-link {% if request.endpoint == 'auditoires' %}active{% endif %}" href="{{ url_for('auditoires') }}">Auditoires</a>
+                            <a class="nav-link {% if request.endpoint == 'auditoires' %}active{% endif %}" href="{{ url_for('auditoires') }}">Promotions</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request.endpoint == 'presence' or request.endpoint == 'rapport_presence' %}active{% endif %}" href="{{ url_for('presence') }}">Présences</a>

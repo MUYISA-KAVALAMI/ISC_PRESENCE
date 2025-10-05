@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Gestion des Auditoires - Horaire ISC{% endblock %}
+{% block title %}Gestion des Promotions - Horaire ISC{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Gestion des Auditoires</h2>
-    <a href="{{ url_for('ajouter_auditoire') }}" class="btn btn-primary">+ Ajouter un auditoire</a>
+    <h2>Gestion des Promotions</h2>
+    <a href="{{ url_for('ajouter_auditoire') }}" class="btn btn-primary">+ Ajouter une promotion</a>
 </div>
 
 {% with messages = get_flashed_messages() %}

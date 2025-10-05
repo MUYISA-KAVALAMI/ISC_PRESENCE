@@ -15,9 +15,9 @@
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="auditoire_id" class="form-label">Auditoire *</label>
+                    <label for="auditoire_id" class="form-label">Promotion *</label>
                     <select class="form-select" id="auditoire_id" name="auditoire_id" required>
-                        <option value="">Sélectionner un auditoire</option>
+                        <option value="">Sélectionner une promotion</option>
                         {% for auditoire in auditoires %}
                         <option value="{{ auditoire.id }}">{{ auditoire.nom }}{% if auditoire.capacite %} ({{ auditoire.capacite }} places){% endif %}</option>
                         {% endfor %}
