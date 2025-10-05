@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Modifier le Cours - Horaire ISC{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2 class="mb-4">Modifier le Cours</h2>
+        
+        <form method="POST">
+            <!-- NOUVEAU CHAMP DÉSIGNATION -->
+            <div class="mb-3">
+                <label for="designation" class="form-label">Désignation du cours *</label>
+                <input type="text" class="form-control" id="designation" name="designation" 
+                       value="{{ cours.designation }}" placeholder="Ex: Algorithmique et Programmation" required>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="auditoire_id" class="form-label">Auditoire *</label>
+                    <select class="form-select" id="auditoire_id" name="auditoire_id" required>
+                        <option value="">Sélectionner un auditoire</option>
+                        {% for auditoire in auditoires %}
+                        <option value="{{ auditoire.id }}" {% if cours.auditoire_id == auditoire.id %}selected{% endif %}>
+                            {{ auditoire.nom }}{% if auditoire.capacite %} ({{ auditoire.capacite }} places){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="enseignant_id" class="form-label">Enseignant *</label>
+                    <select class="form-select" id="enseignant_id" name="enseignant_id" required>
+                        <option value="">Sélectionner un enseignant</option>
+                        {% for enseignant in enseignants %}
+                        <option value="{{ enseignant.id }}" {% if cours.enseignant_id == enseignant.id %}selected{% endif %}>
+                            {{ enseignant.nom }} {{ enseignant.postnom }} {{ enseignant.prenom }} - {{ enseignant.grade }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="date_debut" class="form-label">Date de début *</label>
+                    <input type="date" class="form-control" id="date_debut" name="date_debut" 
+                           value="{{ cours.date_debut.strftime('%Y-%m-%d') }}" required>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="date_fin" class="form-label">Date de fin *</label>
+                    <input type="date" class="form-control" id="date_fin" name="date_fin" 
+                           value="{{ cours.date_fin.strftime('%Y-%m-%d') }}" required>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="volume_horaire" class="form-label">Volume horaire (heures) *</label>
+                <input type="number" class="form-control" id="volume_horaire" name="volume_horaire" 
+                       value="{{ cours.volume_horaire }}" min="1" max="100" required>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Modifier le cours</button>
+                <a href="{{ url_for('cours') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Script pour mettre à jour la date de fin minimum
+    document.getElementById('date_debut').addEventListener('change', function() {
+        document.getElementById('date_fin').min = this.value;
+    });
+</script>
+{% endblock %}

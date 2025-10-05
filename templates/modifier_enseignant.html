@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Modifier l'Enseignant - Horaire ISC{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="mb-4">Modifier l'Enseignant</h2>
+        
+        <form method="POST">
+            <div class="mb-3">
+                <label for="nom" class="form-label">Nom</label>
+                <input type="text" class="form-control" id="nom" name="nom" value="{{ enseignant.nom }}" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="postnom" class="form-label">Postnom</label>
+                <input type="text" class="form-control" id="postnom" name="postnom" value="{{ enseignant.postnom }}" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="prenom" class="form-label">Prénom</label>
+                <input type="text" class="form-control" id="prenom" name="prenom" value="{{ enseignant.prenom }}" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="grade" class="form-label">Grade</label>
+                <select class="form-select" id="grade" name="grade" required>
+                    <option value="Assistant" {% if enseignant.grade == 'Assistant' %}selected{% endif %}>Assistant</option>
+                    <option value="Chef de travaux" {% if enseignant.grade == 'Chef de travaux' %}selected{% endif %}>Chef de travaux</option>
+                    <option value="Professeur" {% if enseignant.grade == 'Professeur' %}selected{% endif %}>Professeur</option>
+                    <option value="Professeur ordinaire" {% if enseignant.grade == 'Professeur ordinaire' %}selected{% endif %}>Professeur ordinaire</option>
+                    <option value="Chargé de cours" {% if enseignant.grade == 'Chargé de cours' %}selected{% endif %}>Chargé de cours</option>
+                </select>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Modifier</button>
+                <a href="{{ url_for('enseignants') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

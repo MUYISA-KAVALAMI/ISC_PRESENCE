@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Ajouter un Auditoire - Horaire ISC{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="mb-4">Ajouter un Auditoire</h2>
+        
+        <form method="POST">
+            <div class="mb-3">
+                <label for="nom" class="form-label">Nom de l'auditoire</label>
+                <input type="text" class="form-control" id="nom" name="nom" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="capacite" class="form-label">Capacité</label>
+                <input type="number" class="form-control" id="capacite" name="capacite" min="1">
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Ajouter</button>
+                <a href="{{ url_for('auditoires') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

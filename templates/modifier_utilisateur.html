@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Modifier l'Utilisateur - Horaire ISC{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="mb-4">Modifier l'Utilisateur</h2>
+        
+        {% if utilisateur.username == 'admin' %}
+        <div class="alert alert-warning">
+            <strong>Attention :</strong> Vous modifiez le compte administrateur principal.
+        </div>
+        {% endif %}
+        
+        <form method="POST">
+            <div class="mb-3">
+                <label for="username" class="form-label">Nom d'utilisateur *</label>
+                <input type="text" class="form-control" id="username" name="username" value="{{ utilisateur.username }}" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="password" class="form-label">Nouveau mot de passe</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Laisser vide pour ne pas changer">
+                <div class="form-text">Laisser ce champ vide si vous ne souhaitez pas modifier le mot de passe.</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="role" class="form-label">Rôle *</label>
+                <select class="form-select" id="role" name="role" required>
+                    <option value="admin" {% if utilisateur.role == 'admin' %}selected{% endif %}>Administrateur</option>
+                    <option value="enseignant" {% if utilisateur.role == 'enseignant' %}selected{% endif %}>Enseignant</option>
+                    <option value="utilisateur" {% if utilisateur.role == 'utilisateur' %}selected{% endif %}>Utilisateur</option>
+                </select>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Modifier l'utilisateur</button>
+                <a href="{{ url_for('utilisateurs') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

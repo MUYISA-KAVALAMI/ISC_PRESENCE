@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}Rapport des Présences - Horaire ISC{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Rapport des Présences</h2>
+    <a href="{{ url_for('presence') }}" class="btn btn-primary">Gérer les présences</a>
+</div>
+
+<!-- Formulaire de filtre -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Générer un rapport</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-6">
+                <label for="cours_id" class="form-label">Cours</label>
+                <select class="form-select" id="cours_id" name="cours_id">
+                    <option value="">Sélectionner un cours</option>
+                    {% for cours in cours_list %}
+                    <option value="{{ cours.id }}" {% if cours_selected and cours_selected.id == cours.id %}selected{% endif %}>
+                        {{ cours.designation }} - {{ cours.auditoire.nom }} ({{ cours.enseignant.nom }} {{ cours.enseignant.postnom }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">Générer le rapport</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Rapport -->
+{% if cours_selected and rapports %}
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            Rapport de présence
+        </h5>
+    </div>
+    <div class="card-body">
+        <!-- Informations du cours -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h6>Informations du cours:</h6>
+                <ul class="list-unstyled">
+                    <li><strong>Désignation:</strong> {{ cours_selected.designation }}</li>
+                    <li><strong>Auditoire:</strong> {{ cours_selected.auditoire.nom }}</li>
+                    <li><strong>Enseignant:</strong> {{ cours_selected.enseignant.nom }} {{ cours_selected.enseignant.postnom }}</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>Période du cours:</h6>
+                <ul class="list-unstyled">
+                    <li><strong>Début:</strong> {{ cours_selected.date_debut.strftime('%d/%m/%Y') }}</li>
+                    <li><strong>Fin:</strong> {{ cours_selected.date_fin.strftime('%d/%m/%Y') }}</li>
+                    <li><strong>Volume horaire:</strong> {{ cours_selected.volume_horaire }}h</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Matricule</th>
+                        <th>Nom</th>
+                        <th>Postnom</th>
+                        <th>Prénom</th>
+                        <th>Séances totales</th>
+                        <th>Présences</th>
+                        <th>Absences</th>
+                        <th>Taux de présence</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rapport in rapports %}
+                    <tr>
+                        <td><strong>{{ rapport.etudiant.matricule }}</strong></td>
+                        <td>{{ rapport.etudiant.nom }}</td>
+                        <td>{{ rapport.etudiant.postnom }}</td>
+                        <td>{{ rapport.etudiant.prenom }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ rapport.total_seances }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-success">{{ rapport.presences_count }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-danger">{{ rapport.total_seances - rapport.presences_count }}</span>
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar {% if rapport.pourcentage >= 75 %}bg-success{% elif rapport.pourcentage >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ rapport.pourcentage }}%;"
+                                     aria-valuenow="{{ rapport.pourcentage }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ rapport.pourcentage }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if rapport.pourcentage >= 75 %}
+                                <span class="badge bg-success">Excellent</span>
+                            {% elif rapport.pourcentage >= 50 %}
+                                <span class="badge bg-warning text-dark">Moyen</span>
+                            {% else %}
+                                <span class="badge bg-danger">Faible</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Statistiques globales -->
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-primary">
+                    <div class="card-body text-center">
+                        <h4>{{ rapports|length }}</h4>
+                        <p>Étudiants total</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-success">
+                    <div class="card-body text-center">
+                        <h4>{{ (rapports|selectattr('pourcentage', '>=', 75)|list)|length }}</h4>
+                        <p>Assidus (≥75%)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-warning">
+                    <div class="card-body text-center">
+                        <h4>{{ (rapports|selectattr('pourcentage', '>=', 50)|selectattr('pourcentage', '<', 75)|list)|length }}</h4>
+                        <p>Moyens (50-74%)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-danger">
+                    <div class="card-body text-center">
+                        <h4>{{ (rapports|selectattr('pourcentage', '<', 50)|list)|length }}</h4>
+                        <p>Faibles (<50%)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Résumé détaillé -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Résumé du rapport</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>Taux de présence moyen:</strong> 
+                                {{ (rapports|sum(attribute='pourcentage') / rapports|length)|round(2) }}%
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Total des séances:</strong> 
+                                {{ rapports[0].total_seances if rapports else 0 }}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Date de génération:</strong> 
+                                Aujourd'hui
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% elif cours_selected %}
+<div class="alert alert-info">
+    Aucune donnée de présence trouvée pour ce cours.
+</div>
+{% endif %}
+
+<!-- Instructions -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h6 class="mb-0">Comment interpréter le rapport</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <span class="badge bg-success">Excellent</span> - Taux de présence ≥ 75%
+            </div>
+            <div class="col-md-4">
+                <span class="badge bg-warning text-dark">Moyen</span> - Taux de présence 50-74%
+            </div>
+            <div class="col-md-4">
+                <span class="badge bg-danger">Faible</span> - Taux de présence < 50%
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+.badge {
+    font-size: 0.8em;
+}
+</style>
+{% endblock %}

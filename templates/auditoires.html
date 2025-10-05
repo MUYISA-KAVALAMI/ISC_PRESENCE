@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Gestion des Auditoires - Horaire ISC{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Gestion des Auditoires</h2>
+    <a href="{{ url_for('ajouter_auditoire') }}" class="btn btn-primary">+ Ajouter un auditoire</a>
+</div>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <div class="alert alert-success">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Capacité</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for auditoire in auditoires %}
+            <tr>
+                <td>{{ auditoire.id }}</td>
+                <td>{{ auditoire.nom }}</td>
+                <td>{{ auditoire.capacite or 'Non spécifiée' }}</td>
+                <td>
+                    <a href="{{ url_for('modifier_auditoire', id=auditoire.id) }}" class="btn btn-warning btn-sm">Modifier</a>
+                    <a href="{{ url_for('supprimer_auditoire', id=auditoire.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet auditoire ?')">Supprimer</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

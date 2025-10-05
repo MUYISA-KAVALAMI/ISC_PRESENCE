@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% block title %}Gestion des Cours - Horaire ISC{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Gestion des Cours</h2>
+    <a href="{{ url_for('ajouter_cours') }}" class="btn btn-primary">+ Ajouter un cours</a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- Filtres -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Filtrer les cours</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label for="filter_auditoire" class="form-label">Par auditoire</label>
+                <select class="form-select" id="filter_auditoire" onchange="filterCours()">
+                    <option value="">Tous les auditoires</option>
+                    {% for auditoire in auditoires_list %}
+                    <option value="{{ auditoire.id }}">{{ auditoire.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="filter_enseignant" class="form-label">Par enseignant</label>
+                <select class="form-select" id="filter_enseignant" onchange="filterCours()">
+                    <option value="">Tous les enseignants</option>
+                    {% for enseignant in enseignants_list %}
+                    <option value="{{ enseignant.id }}">{{ enseignant.nom }} {{ enseignant.postnom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="filter_statut" class="form-label">Par statut</label>
+                <select class="form-select" id="filter_statut" onchange="filterCours()">
+                    <option value="">Tous les statuts</option>
+                    <option value="en_cours">En cours</option>
+                    <option value="a_venir">À venir</option>
+                    <option value="termine">Terminé</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover" id="coursTable">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Désignation</th>  <!-- NOUVELLE COLONNE -->
+                <th>Auditoire</th>
+                <th>Enseignant</th>
+                <th>Période</th>
+                <th>Volume Horaire</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cours in cours_list %}
+            <tr data-auditoire="{{ cours.auditoire_id }}" data-enseignant="{{ cours.enseignant_id }}" data-statut="{{ cours.statut }}">
+                <td>{{ cours.id }}</td>
+                <td>
+                    <strong>{{ cours.designation }}</strong>  <!-- AFFICHAGE DE LA DÉSIGNATION -->
+                </td>
+                <td>
+                    <strong>{{ cours.auditoire.nom }}</strong>
+                    {% if cours.auditoire.capacite %}
+                    <br><small class="text-muted">{{ cours.auditoire.capacite }} places</small>
+                    {% endif %}
+                </td>
+                <td>
+                    {{ cours.enseignant.nom }} {{ cours.enseignant.postnom }} 
+                    <br><small class="text-muted">{{ cours.enseignant.grade }}</small>
+                </td>
+                <td>
+                    <strong>Début:</strong> {{ cours.date_debut.strftime('%d/%m/%Y') }}<br>
+                    <strong>Fin:</strong> {{ cours.date_fin.strftime('%d/%m/%Y') }}<br>
+                    <small class="text-muted">{{ cours.duree }} jours</small>
+                </td>
+                <td>
+                    <span class="badge bg-primary fs-6">{{ cours.volume_horaire }}h</span>
+                </td>
+                <td>
+                    {% if cours.statut == 'en_cours' %}
+                        <span class="badge bg-warning text-dark">En cours</span>
+                    {% elif cours.statut == 'a_venir' %}
+                        <span class="badge bg-info">À venir</span>
+                    {% else %}
+                        <span class="badge bg-success">Terminé</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="btn-group-vertical btn-group-sm" role="group">
+                        <a href="{{ url_for('modifier_cours', id=cours.id) }}" class="btn btn-warning mb-1">
+                            <i class="bi bi-pencil"></i> Modifier
+                        </a>
+                        <a href="{{ url_for('presence') }}?cours_id={{ cours.id }}" class="btn btn-info mb-1">
+                            <i class="bi bi-clipboard-check"></i> Présences
+                        </a>
+                        <a href="{{ url_for('supprimer_cours', id=cours.id) }}" class="btn btn-danger" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')">
+                            <i class="bi bi-trash"></i> Supprimer
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Statistiques -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body text-center">
+                <h4>{{ cours_list|length }}</h4>
+                <p>Total Cours</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body text-center">
+                <h4>{{ cours_list|selectattr('statut', 'equalto', 'en_cours')|list|length }}</h4>
+                <p>En Cours</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body text-center">
+                <h4>{{ cours_list|selectattr('statut', 'equalto', 'a_venir')|list|length }}</h4>
+                <p>À Venir</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body text-center">
+                <h4>{{ cours_list|selectattr('statut', 'equalto', 'termine')|list|length }}</h4>
+                <p>Terminés</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterCours() {
+    const auditoireFilter = document.getElementById('filter_auditoire').value;
+    const enseignantFilter = document.getElementById('filter_enseignant').value;
+    const statutFilter = document.getElementById('filter_statut').value;
+    
+    const rows = document.querySelectorAll('#coursTable tbody tr');
+    
+    rows.forEach(row => {
+        const auditoireMatch = !auditoireFilter || row.getAttribute('data-auditoire') === auditoireFilter;
+        const enseignantMatch = !enseignantFilter || row.getAttribute('data-enseignant') === enseignantFilter;
+        const statutMatch = !statutFilter || row.getAttribute('data-statut') === statutFilter;
+        
+        if (auditoireMatch && enseignantMatch && statutMatch) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Ajouter la propriété statut et durée à chaque cours
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    
+    document.querySelectorAll('#coursTable tbody tr').forEach(row => {
+        const dateDebut = new Date(row.cells[4].textContent.split('Début: ')[1].split('\n')[0].split('/').reverse().join('-'));  // Changé de 3 à 4
+        const dateFin = new Date(row.cells[4].textContent.split('Fin: ')[1].split('\n')[0].split('/').reverse().join('-'));  // Changé de 3 à 4
+        
+        // Calculer la durée
+        const duree = Math.ceil((dateFin - dateDebut) / (1000 * 60 * 60 * 24));
+        row.cells[4].querySelector('.text-muted').textContent = duree + ' jours';  // Changé de 3 à 4
+        
+        // Déterminer le statut
+        let statut;
+        if (today < dateDebut) {
+            statut = 'a_venir';
+        } else if (today > dateFin) {
+            statut = 'termine';
+        } else {
+            statut = 'en_cours';
+        }
+        
+        row.setAttribute('data-statut', statut);
+    });
+});
+</script>
+
+<style>
+.btn-group-vertical .btn {
+    margin-bottom: 2px;
+    text-align: left;
+    font-size: 0.8rem;
+}
+.badge {
+    font-size: 0.9em;
+}
+.table td {
+    vertical-align: middle;
+}
+</style>
+{% endblock %}

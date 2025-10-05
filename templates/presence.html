@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}Gestion des Présences - Horaire ISC{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Gestion des Présences</h2>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- Formulaire de filtre -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Filtrer les présences</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-6">
+                <label for="cours_id" class="form-label">Cours</label>
+                <select class="form-select" id="cours_id" name="cours_id" required>
+                    <option value="">Sélectionner un cours</option>
+                    {% for cours in cours_list %}
+                    <option value="{{ cours.id }}" {% if cours_selected and cours_selected.id == cours.id %}selected{% endif %}>
+                        {{ cours.designation }} - {{ cours.auditoire.nom }} ({{ cours.enseignant.nom }} {{ cours.enseignant.postnom }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="date_jour" class="form-label">Date</label>
+                <input type="date" class="form-control" id="date_jour" name="date_jour" value="{{ date_jour }}" required>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Afficher</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Formulaire de présence -->
+{% if cours_selected and presences %}
+<div class="card">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            Liste de présence
+        </h5>
+    </div>
+    <div class="card-body">
+        <!-- Informations du cours -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h6>Informations du cours:</h6>
+                <ul class="list-unstyled">
+                    <li><strong>Désignation:</strong> {{ cours_selected.designation }}</li>
+                    <li><strong>Auditoire:</strong> {{ cours_selected.auditoire.nom }}</li>
+                    <li><strong>Enseignant:</strong> {{ cours_selected.enseignant.nom }} {{ cours_selected.enseignant.postnom }}</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>Informations de la séance:</h6>
+                <ul class="list-unstyled">
+                    <li><strong>Date:</strong> {{ date_jour }}</li>
+                    <li><strong>Volume horaire:</strong> {{ cours_selected.volume_horaire }}h</li>
+                    <li><strong>Période:</strong> {{ cours_selected.date_debut.strftime('%d/%m/%Y') }} au {{ cours_selected.date_fin.strftime('%d/%m/%Y') }}</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- SOLUTION : Utiliser action vide pour poster sur la même URL -->
+        <form method="POST">
+            <input type="hidden" name="cours_id" value="{{ cours_selected.id }}">
+            <input type="hidden" name="date_jour" value="{{ date_jour }}">
+            
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Matricule</th>
+                            <th>Nom</th>
+                            <th>Postnom</th>
+                            <th>Prénom</th>
+                            <th>Genre</th>
+                            <th class="text-center">Présent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for presence in presences %}
+                        <tr>
+                            <td><strong>{{ presence.etudiant.matricule }}</strong></td>
+                            <td>{{ presence.etudiant.nom }}</td>
+                            <td>{{ presence.etudiant.postnom }}</td>
+                            <td>{{ presence.etudiant.prenom }}</td>
+                            <td>
+                                {% if presence.etudiant.genre == 'M' %}
+                                    <span class="badge bg-primary">M</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">F</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" name="presence_{{ presence.etudiant.id }}" 
+                                       {% if presence.present %}checked{% endif %}
+                                       class="form-check-input presence-checkbox" 
+                                       style="transform: scale(1.5); cursor: pointer;">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Actions rapides -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-success btn-sm" onclick="selectAll()">
+                            Tout sélectionner
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="deselectAll()">
+                            Tout désélectionner
+                        </button>
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="invertSelection()">
+                            Inverser la sélection
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 col-md-4 mx-auto mt-4">
+                <button type="submit" class="btn btn-success btn-lg">
+                    Enregistrer les présences
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% elif cours_selected %}
+<div class="alert alert-info">
+    Aucun étudiant trouvé dans cet auditoire. Veuillez d'abord ajouter des étudiants à l'auditoire "{{ cours_selected.auditoire.nom }}".
+</div>
+{% endif %}
+
+<script>
+    // Script pour limiter la date à aujourd'hui ou avant
+    document.getElementById('date_jour').max = new Date().toISOString().split('T')[0];
+
+    // Fonctions pour la gestion des cases à cocher
+    function selectAll() {
+        document.querySelectorAll('.presence-checkbox').forEach(checkbox => {
+            checkbox.checked = true;
+        });
+    }
+
+    function deselectAll() {
+        document.querySelectorAll('.presence-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    }
+
+    function invertSelection() {
+        document.querySelectorAll('.presence-checkbox').forEach(checkbox => {
+            checkbox.checked = !checkbox.checked;
+        });
+    }
+
+    // Amélioration de l'UX : changement de couleur des lignes selon la présence
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.presence-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const row = this.closest('tr');
+                if (this.checked) {
+                    row.classList.add('table-success');
+                    row.classList.remove('table-light');
+                } else {
+                    row.classList.remove('table-success');
+                    row.classList.add('table-light');
+                }
+            });
+
+            // Appliquer les couleurs initiales
+            const row = checkbox.closest('tr');
+            if (checkbox.checked) {
+                row.classList.add('table-success');
+            } else {
+                row.classList.add('table-light');
+            }
+        });
+    });
+</script>
+
+<style>
+.presence-checkbox {
+    cursor: pointer;
+}
+.table-success {
+    background-color: #d1e7dd !important;
+}
+.table-light {
+    background-color: #f8f9fa !important;
+}
+</style>
+{% endblock %}

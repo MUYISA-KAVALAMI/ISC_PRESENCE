@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Modifier l'Étudiant - Horaire ISC{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2 class="mb-4">Modifier l'Étudiant</h2>
+        
+        <div class="alert alert-info mb-3">
+            <strong>Matricule :</strong> {{ etudiant.matricule }}<br>
+            <small>Le matricule ne peut pas être modifié car il est généré automatiquement.</small>
+        </div>
+        
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="nom" class="form-label">Nom *</label>
+                    <input type="text" class="form-control" id="nom" name="nom" value="{{ etudiant.nom }}" required>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label for="postnom" class="form-label">Postnom *</label>
+                    <input type="text" class="form-control" id="postnom" name="postnom" value="{{ etudiant.postnom }}" required>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label for="prenom" class="form-label">Prénom *</label>
+                    <input type="text" class="form-control" id="prenom" name="prenom" value="{{ etudiant.prenom }}" required>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="genre" class="form-label">Genre *</label>
+                    <select class="form-select" id="genre" name="genre" required>
+                        <option value="M" {% if etudiant.genre == 'M' %}selected{% endif %}>Masculin</option>
+                        <option value="F" {% if etudiant.genre == 'F' %}selected{% endif %}>Féminin</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="auditoire_id" class="form-label">Auditoire *</label>
+                    <select class="form-select" id="auditoire_id" name="auditoire_id" required>
+                        {% for auditoire in auditoires %}
+                        <option value="{{ auditoire.id }}" {% if etudiant.auditoire_id == auditoire.id %}selected{% endif %}>
+                            {{ auditoire.nom }} {% if auditoire.capacite %}({{ auditoire.capacite }} places){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-primary me-md-2">Modifier l'étudiant</button>
+                <a href="{{ url_for('etudiants') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

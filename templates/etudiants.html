@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Gestion des Étudiants - Horaire ISC{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Gestion des Étudiants</h2>
+    <a href="{{ url_for('ajouter_etudiant') }}" class="btn btn-primary">+ Ajouter un étudiant</a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Matricule</th>
+                <th>Nom</th>
+                <th>Postnom</th>
+                <th>Prénom</th>
+                <th>Genre</th>
+                <th>Auditoire</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for etudiant in etudiants %}
+            <tr>
+                <td><strong>{{ etudiant.matricule }}</strong></td>
+                <td>{{ etudiant.nom }}</td>
+                <td>{{ etudiant.postnom }}</td>
+                <td>{{ etudiant.prenom }}</td>
+                <td>
+                    {% if etudiant.genre == 'M' %}
+                        <span class="badge bg-primary">Masculin</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">Féminin</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge bg-secondary">{{ etudiant.auditoire.nom }}</span>
+                </td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('modifier_etudiant', id=etudiant.id) }}" class="btn btn-warning btn-sm">
+                            <i class="bi bi-pencil"></i> Modifier
+                        </a>
+                        <a href="{{ url_for('supprimer_etudiant', id=etudiant.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet étudiant ?')">
+                            <i class="bi bi-trash"></i> Supprimer
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Statistiques -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body text-center">
+                <h4>{{ etudiants|length }}</h4>
+                <p>Total Étudiants</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body text-center">
+                <h4>{{ etudiants|selectattr('genre', 'equalto', 'M')|list|length }}</h4>
+                <p>Masculins</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body text-center">
+                <h4>{{ etudiants|selectattr('genre', 'equalto', 'F')|list|length }}</h4>
+                <p>Féminins</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body text-center">
+                <h4>{{ auditoires_count }}</h4>
+                <p>Auditoires</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtrage par auditoire -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0">Filtrer par auditoire</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for auditoire in auditoires_list %}
+            <div class="col-md-3 mb-2">
+                <a href="?auditoire_id={{ auditoire.id }}" class="btn btn-outline-secondary btn-sm w-100 text-start">
+                    {{ auditoire.nom }} 
+                    <span class="badge bg-primary float-end">{{ auditoire.etudiants|length }}</span>
+                </a>
+            </div>
+            {% endfor %}
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('etudiants') }}" class="btn btn-outline-primary btn-sm w-100">
+                    Voir tous
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.btn-group .btn {
+    margin-right: 5px;
+}
+.badge {
+    font-size: 0.8em;
+}
+</style>
+{% endblock %}
