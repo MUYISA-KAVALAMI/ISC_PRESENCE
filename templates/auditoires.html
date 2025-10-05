@@ -22,7 +22,6 @@
             <tr>
                 <th>ID</th>
                 <th>Nom</th>
-                <th>Capacité</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -31,7 +30,6 @@
             <tr>
                 <td>{{ auditoire.id }}</td>
                 <td>{{ auditoire.nom }}</td>
-                <td>{{ auditoire.capacite or 'Non spécifiée' }}</td>
                 <td>
                     <a href="{{ url_for('modifier_auditoire', id=auditoire.id) }}" class="btn btn-warning btn-sm">Modifier</a>
                     <a href="{{ url_for('supprimer_auditoire', id=auditoire.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet auditoire ?')">Supprimer</a>

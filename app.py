@@ -567,7 +567,7 @@ def etudiants():
                          etudiants=etudiants, 
                          auditoires_count=auditoires_count,
                          auditoires_list=auditoires_list)
-
+@app.route('/ajouter_etudiant', methods=['GET', 'POST'])
 def ajouter_etudiant():
     if 'username' not in session:
         nom = request.form['nom']
